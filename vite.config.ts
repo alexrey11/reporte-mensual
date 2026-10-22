@@ -12,7 +12,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      injectRegister: 'auto', // Dejamos que VitePWA lo inyecte correctamente
+      injectRegister: 'auto',
       manifest: {
         name: 'ReporteMensual',
         short_name: 'ReporteMensual',
@@ -20,9 +20,10 @@ export default defineConfig({
         theme_color: '#0f172a',
         background_color: '#0f172a',
         display: 'standalone',
-        // CRÍTICO: Estas rutas deben coincidir con el 'base'
+        // 🔥 ESTOS SON LOS VALORES CORRECTOS
         start_url: '/reporte-mensual/',
         scope: '/reporte-mensual/',
+        lang: 'es',
         icons: [
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
           { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
