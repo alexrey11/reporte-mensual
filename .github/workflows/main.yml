@@ -24,39 +24,24 @@ jobs:
       - name: Instalar Bubblewrap CLI
         run: npm install -g @bubblewrap/cli
 
-      # 🔥 SOLUCIÓN DEFINITIVA: Crear el config.json manualmente
-      - name: Configurar rutas de Android para Bubblewrap
+      - name: Configurar rutas de Android
         run: |
           mkdir -p ~/.bubblewrap
           SDK_PATH="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
           echo "{\"jdkPath\": \"$JAVA_HOME\", \"androidSdkPath\": \"$SDK_PATH\"}" > ~/.bubblewrap/config.json
-          echo "Configuración creada:"
-          cat ~/.bubblewrap/config.json
 
       - name: Decodificar el Keystore
         run: echo "${{ secrets.KEYSTORE_FILE }}" | base64 --decode > android.keystore
 
-      # 🔥 Usamos 'yes' para responder automáticamente a cualquier pregunta
-      - name: Inicializar Proyecto Android
+      - name: Generar y Compilar Proyecto Android
         env:
           BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          yes | bubblewrap init --manifest https://alexrey11.github.io/reporte-mensual/manifest.json --directory ./android-project --skipPwaValidation
-
-      - name: Ajustar la firma del manifiesto
-        run: |
+          bubblewrap update --directory ./android-project
+          cp android.keystore ./android-project/android.keystore
           cd ./android-project
-          cp ../android.keystore ./android.keystore
-          node -e "const fs=require('fs');const m=JSON.parse(fs.readFileSync('twa-manifest.json'));m.keystorePath='./android.keystore';m.keyAlias='${{ secrets.KEY_ALIAS }}';fs.writeFileSync('twa-manifest.json',JSON.stringify(m,null,2))"
-
-      - name: Compilar APK
-        env:
-          BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: |
-          cd ./android-project
-          yes | bubblewrap build
+          bubblewrap build
 
       - name: Subir APK Nativa
         uses: actions/upload-artifact@v4

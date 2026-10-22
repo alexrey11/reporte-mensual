@@ -1,0 +1,31 @@
+{
+    "packageId": "cu.alexrey11.reportemensual",
+    "host": "alexrey11.github.io",
+    "name": "ReporteMensual",
+    "launcherName": "Reportes",
+    "display": "standalone",
+    "themeColor": "#0f172a",
+    "navigationColor": "#0f172a",
+    "backgroundColor": "#ffffff",
+    "startUrl": "/reporte-mensual/",
+    "iconUrl": "https://alexrey11.github.io/reporte-mensual/pwa-512x512.png",
+    "maskableIconUrl": "https://alexrey11.github.io/reporte-mensual/pwa-512x512.png",
+    "webManifestUrl": "https://alexrey11.github.io/reporte-mensual/manifest.json",
+    "appVersionName": "1.0.0",
+    "appVersionCode": 1,
+    "signingKey": {
+        "path": "./android.keystore",
+        "alias": "mi-alias"
+    },
+    "enableNotifications": false,
+    "generatorApp": "bubblewrap-cli",
+    "isChromeOSOnly": false,
+    "isMetaQuest": false,
+    "fullScopeUrl": "https://alexrey11.github.io/reporte-mensual/",
+    "minSdkVersion": 21,
+    "orientation": "portrait",
+    "fingerprints": [],
+    "additionalTrustedOrigins": [],
+    "retainedBundles": [],
+    "appVersion": "1.0.0"
+}
