@@ -38,10 +38,14 @@ jobs:
           BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          bubblewrap update --directory ./android-project
+          # 🔥 La magia está en 'yes "" |' para responder Enter a todo
+          yes "" | bubblewrap init --manifest https://alexrey11.github.io/reporte-mensual/manifest.json --directory ./android-project --skipPwaValidation
+          
           cp android.keystore ./android-project/android.keystore
           cd ./android-project
-          bubblewrap build
+          
+          # También le damos Enter por si pregunta algo en el build
+          yes "" | bubblewrap build
 
       - name: Subir APK Nativa
         uses: actions/upload-artifact@v4
