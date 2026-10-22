@@ -20,6 +20,7 @@ function App() {
 
   const [camposActuales, setCamposActuales] = useState<Campo[]>([]);
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
+  const [isMobile, setIsMobile] = useState(false);
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [editorModulo, setEditorModulo] = useState<Modulo | null>(null);
@@ -33,10 +34,26 @@ function App() {
   const [globalMenuOpen, setGlobalMenuOpen] = useState(false);
   const globalMenuRef = useRef<HTMLDivElement>(null);
 
+  const [modulosDrawerOpen, setModulosDrawerOpen] = useState(false);
+
   const [usuario, setUsuario] = useState<string>('');
   const [loginInput, setLoginInput] = useState('');
 
+  // Detección de móvil
   useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) setViewMode('cards');
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Cerrar menú al clic fuera
+  useEffect(() => {
+    if (!globalMenuOpen) return;
     function handleClickOutside(e: MouseEvent) {
       if (globalMenuRef.current && !globalMenuRef.current.contains(e.target as Node)) {
         setGlobalMenuOpen(false);
@@ -44,7 +61,7 @@ function App() {
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [globalMenuOpen]);
 
   async function cargar() {
     const m = await db.modulos.orderBy('orden').toArray();
@@ -86,9 +103,7 @@ function App() {
     setUsuario(loginInput.trim());
 
     const guiaVista = await db.config.get('guia_vista');
-    if (!guiaVista?.valor) {
-      setMostrarBienvenida(true);
-    }
+    if (!guiaVista?.valor) setMostrarBienvenida(true);
   }
 
   async function cerrarBienvenida(abrirGuia: boolean) {
@@ -214,7 +229,7 @@ function App() {
     <div className="app-shell">
       <header className="app-header">
         <div className="header-inner">
-          <div className="brand">
+          <div className="brand" onClick={() => setModulosDrawerOpen(true)} style={{ cursor: 'pointer' }}>
             <span className="brand-mark">RM</span>
             <div>
               <h1>ReporteMensual</h1>
@@ -223,36 +238,40 @@ function App() {
           </div>
 
           <div className="header-tools">
-            <label className="month-picker">
-              <span>Mes</span>
-              <select value={mes} onChange={e => setMes(Number(e.target.value))}>
-                {Array.from({ length: 12 }, (_, i) => (
-                  <option key={i} value={i}>{['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'][i]}</option>
-                ))}
-              </select>
-            </label>
-            <label className="month-picker">
-              <span>Año</span>
-              <select value={anio} onChange={e => setAnio(Number(e.target.value))}>
-                {anios.map(a => <option key={a} value={a}>{a}</option>)}
-              </select>
-            </label>
+            {!isMobile && (
+              <>
+                <label className="month-picker">
+                  <span>Mes</span>
+                  <select value={mes} onChange={e => setMes(Number(e.target.value))}>
+                    {Array.from({ length: 12 }, (_, i) => (
+                      <option key={i} value={i}>{['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'][i]}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="month-picker">
+                  <span>Año</span>
+                  <select value={anio} onChange={e => setAnio(Number(e.target.value))}>
+                    {anios.map(a => <option key={a} value={a}>{a}</option>)}
+                  </select>
+                </label>
+              </>
+            )}
 
             <div className="menu-dropdown" ref={globalMenuRef}>
-              <button className="menu-button btn-export" onClick={() => setGlobalMenuOpen(!globalMenuOpen)}>
-                ⚙️ Menú Principal
+              <button className="menu-button" onClick={() => setGlobalMenuOpen(!globalMenuOpen)}>
+                ⚙️ {!isMobile && 'Menú'}
               </button>
               {globalMenuOpen && (
-                <div className="menu-panel" style={{ minWidth: 280 }}>
-
+                <div className="menu-panel">
                   {actual && (
                     <>
                       <div className="menu-section-title">Módulo: {actual.nombre}</div>
-                      <button className="menu-item" onClick={() => { setViewMode(viewMode === 'table' ? 'cards' : 'table'); setGlobalMenuOpen(false); }}>
-                        <span className="menu-icon">{viewMode === 'table' ? '📱' : '📊'}</span>
-                        {viewMode === 'table' ? 'Ver como Tarjetas' : 'Ver como Tabla'}
-                      </button>
-
+                      {!isMobile && (
+                        <button className="menu-item" onClick={() => { setViewMode(viewMode === 'table' ? 'cards' : 'table'); setGlobalMenuOpen(false); }}>
+                          <span className="menu-icon">{viewMode === 'table' ? '📱' : '📊'}</span>
+                          {viewMode === 'table' ? 'Ver como Tarjetas' : 'Ver como Tabla'}
+                        </button>
+                      )}
                       <div style={{ padding: '6px 10px' }}>
                         <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>Columnas visibles</div>
                         <div style={{ maxHeight: 150, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -264,7 +283,6 @@ function App() {
                           ))}
                         </div>
                       </div>
-
                       <div className="menu-divider" />
                       <button className="menu-item" onClick={() => { setImportExcelGlobalOpen(true); setGlobalMenuOpen(false); }}>
                         <span className="menu-icon">📥</span> Importar Excel
@@ -273,7 +291,7 @@ function App() {
                         <span className="menu-icon">🎁</span> Exportar Plantilla
                       </button>
                       <button className="menu-item" onClick={() => { exportarModuloCompleto(actual.id); setGlobalMenuOpen(false); }}>
-                        <span className="menu-icon">💾</span> Exportar Módulo Completo
+                        <span className="menu-icon">💾</span> Exportar Módulo
                       </button>
                       <button className="menu-item" onClick={abrirEditarModulo}>
                         <span className="menu-icon">✏️</span> Editar Módulo
@@ -287,7 +305,6 @@ function App() {
                       <div className="menu-divider" />
                     </>
                   )}
-
                   <div className="menu-section-title">Global</div>
                   <button className="menu-item" onClick={abrirNuevoModulo}>
                     <span className="menu-icon">➕</span> Nuevo Módulo
@@ -348,12 +365,8 @@ function App() {
               <p>Es tu primera vez aquí. Te recomendamos leer la guía rápida para aprovechar todas las funciones.</p>
             </div>
             <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-              <button className="btn-primary" onClick={() => cerrarBienvenida(true)}>
-                📖 Ver Guía
-              </button>
-              <button className="btn-ghost" onClick={() => cerrarBienvenida(false)}>
-                Ya la conozco
-              </button>
+              <button className="btn-primary" onClick={() => cerrarBienvenida(true)}>📖 Ver Guía</button>
+              <button className="btn-ghost" onClick={() => cerrarBienvenida(false)}>Ya la conozco</button>
             </div>
           </div>
         )}
@@ -364,6 +377,7 @@ function App() {
             modulo={actual}
             campos={camposActuales}
             viewMode={viewMode}
+            isMobile={isMobile}
             anio={anio}
             mes={mes}
             usuario={usuario}
@@ -374,14 +388,62 @@ function App() {
         ) : (
           <div className="empty-module">
             <h2>Sin módulos aún</h2>
-            <p>Usa el botón "⚙️ Menú Principal" arriba a la derecha para crear tu primer módulo o importarlo desde Excel.</p>
+            <p>Usa el botón "⚙️ Menú" arriba a la derecha para crear tu primer módulo.</p>
           </div>
         )}
       </main>
 
-      <footer className="app-footer" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
-        <p style={{ margin: 0 }}>ReporteMensual · Offline · Creado por Tte. Alejandro de la Cuesta Rey</p>
+      <footer className="app-footer">
+        <p style={{ margin: 0 }}>ReporteMensual · Offline · Tte. Alejandro de la Cuesta Rey</p>
       </footer>
+
+      {/* BOTTOM NAV MÓVIL */}
+      {isMobile && (
+        <nav className="mobile-bottom-nav">
+          <button onClick={() => setModulosDrawerOpen(true)}>
+            <span className="icon">📁</span>
+            <span>Módulos</span>
+          </button>
+          <button onClick={() => { window.dispatchEvent(new Event('abrir-nuevo-registro')); }} className="nav-new">
+            <span className="icon">➕</span>
+            <span>Nuevo</span>
+          </button>
+          <button onClick={() => setGlobalMenuOpen(true)}>
+            <span className="icon">⚙️</span>
+            <span>Menú</span>
+          </button>
+        </nav>
+      )}
+
+      {/* DRAWER DE MÓDULOS (Móvil) */}
+      {modulosDrawerOpen && (
+        <div className="drawer-overlay" onClick={() => setModulosDrawerOpen(false)}>
+          <div className="drawer-panel" onClick={e => e.stopPropagation()}>
+            <div className="drawer-header">
+              <h3>Mis Módulos</h3>
+              <button className="btn-icon-close" onClick={() => setModulosDrawerOpen(false)}>✕</button>
+            </div>
+            <div className="drawer-body">
+              {modulos.map(m => (
+                <button
+                  key={m.id}
+                  className={`drawer-item ${m.id === actualId ? 'active' : ''}`}
+                  onClick={() => { setActualId(m.id); setModulosDrawerOpen(false); }}
+                >
+                  <span style={{ fontSize: 20 }}>{m.icono}</span>
+                  <span style={{ flex: 1, textAlign: 'left' }}>{m.nombre}</span>
+                  {m.id === actualId && <span style={{ color: 'var(--primary)' }}>✓</span>}
+                </button>
+              ))}
+              <div className="menu-divider" style={{ margin: '12px 0' }} />
+              <button className="drawer-item" onClick={() => { abrirNuevoModulo(); setModulosDrawerOpen(false); }}>
+                <span style={{ fontSize: 20 }}>➕</span>
+                <span>Nuevo módulo</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {editorOpen && (
         <EditorModulo
@@ -413,29 +475,6 @@ function App() {
       )}
 
       {guiaOpen && <Guia onClose={() => setGuiaOpen(false)} />}
-
-      {/* ==========================================
-          BARRA DE NAVEGACIÓN INFERIOR (MÓVIL)
-          ========================================== */}
-      <nav className="mobile-bottom-nav">
-        <button onClick={() => setGlobalMenuOpen(true)}>
-          <span className="icon">☰</span>
-          <span>Menú</span>
-        </button>
-        <button onClick={() => setViewMode('cards')}>
-          <span className="icon">📋</span>
-          <span>Tarjetas</span>
-        </button>
-        <button onClick={() => { window.dispatchEvent(new Event('abrir-nuevo-registro')); }}>
-          <span className="icon" style={{ fontSize: 24, color: 'var(--primary)' }}>➕</span>
-          <span style={{ color: 'var(--primary)' }}>Nuevo</span>
-        </button>
-        <button onClick={() => setViewMode('table')}>
-          <span className="icon">📊</span>
-          <span>Tabla</span>
-        </button>
-      </nav>
-
       <PWAInstallPrompt />
       <div id="pdf-render-area" style={{ position: 'fixed', left: '-99999px', top: 0 }} />
     </div>
