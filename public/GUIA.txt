@@ -1,0 +1,63 @@
+═══════════════════════════════════════════════════════════════
+  GUÍA DE USO — REPORTEMENSUAL
+═══════════════════════════════════════════════════════════════
+
+¿QUÉ ES?
+Aplicación web offline para gestionar reportes de trabajos.
+Funciona sin internet y guarda todo en tu dispositivo.
+
+─── PRIMEROS PASOS ───
+1. Al entrar por primera vez, ingresa tu nombre.
+2. Verás dos módulos de ejemplo.
+3. Usa el botón "⚙️ Menú Principal" para todas las acciones.
+
+─── CREAR UN MÓDULO ───
+Menú → Nuevo Módulo
+- Ponle nombre, ícono y color.
+- Agrega los campos que necesites.
+- Marca qué campos mostrar en la tabla.
+- Guarda.
+
+─── IMPORTAR DESDE EXCEL ───
+Menú → Crear Módulo desde Excel
+- Selecciona tu archivo (.xlsx, .xls, .csv).
+- Elige hoja y columnas.
+- Pulsa "Crear módulo". Listo.
+
+─── REGISTRAR TRABAJOS ───
+- Pulsa "+ Nuevo Registro" o presiona Alt+N.
+- Rellena los campos (los obligatorios tienen *).
+- Guarda con Ctrl+S.
+
+─── BUSCAR Y FILTRAR ───
+- Buscador: texto libre.
+- Filtro por estado: desplegable.
+- Filtro por fechas: calendarios.
+
+─── EXPORTAR ───
+- PDF: profesional con gráficos y estadísticas.
+- Excel: datos planos.
+- Vista filtrada: "Exportar esta vista" tras filtrar.
+
+─── BACKUP (¡MUY IMPORTANTE!) ───
+Los datos viven en tu navegador. Si borras caché, se pierden.
+- Backup semanal: Menú → Backup JSON.
+- Guarda ese archivo en USB o nube.
+- Restaurar: Menú → Restaurar Backup.
+
+─── ATAJOS ───
+- Alt + N   → Nuevo registro
+- Ctrl + S  → Guardar en formulario
+- Esc       → Cerrar modal
+
+─── INSTALAR EN CELULAR ───
+- Android (Chrome): Menú → "Instalar app".
+- iPhone (Safari): Compartir → "Añadir a pantalla de inicio".
+
+─── AYUDA ───
+Consulta la guía completa desde Menú → Ver Guía de Uso.
+
+═══════════════════════════════════════════════════════════════
+  Creado por: Tte. Alejandro de la Cuesta Rey
+  Contacto del Ing.: +53 55501545
+═══════════════════════════════════════════════════════════════
