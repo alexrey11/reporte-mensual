@@ -30,34 +30,59 @@ jobs:
           SDK_PATH="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
           echo "{\"jdkPath\": \"$JAVA_HOME\", \"androidSdkPath\": \"$SDK_PATH\"}" > ~/.bubblewrap/config.json
 
-      - name: Verificar que el manifiesto existe
-        run: |
-          echo "Descargando manifiesto para verificar..."
-          # Usamos .webmanifest que es el nombre real
-          curl -s -o manifest_check.json https://alexrey11.github.io/reporte-mensual/manifest.webmanifest
-          echo "Contenido del manifiesto:"
-          cat manifest_check.json
-          # Si el archivo contiene un error HTML, detenemos el proceso aquí
-          if grep -q "<!DOCTYPE" manifest_check.json; then
-            echo "Error: GitHub Pages devolvió HTML en lugar de JSON. La URL es incorrecta."
-            exit 1
-          fi
-
       - name: Decodificar el Keystore
         run: echo "${{ secrets.KEYSTORE_FILE }}" | base64 --decode > android.keystore
 
-      - name: Generar y Compilar Proyecto Android
+      # 🔥 CREAMOS EL MANIFIESTO LOCAL CON TODAS LAS RESPUESTAS
+      - name: Crear twa-manifest.json
+        run: |
+          cat > twa-manifest.json << EOF
+          {
+            "packageId": "cu.alexrey11.reportemensual",
+            "host": "alexrey11.github.io",
+            "name": "ReporteMensual",
+            "launcherName": "Reportes",
+            "display": "standalone",
+            "themeColor": "#0f172a",
+            "navigationColor": "#0f172a",
+            "backgroundColor": "#ffffff",
+            "startUrl": "/reporte-mensual/",
+            "iconUrl": "https://alexrey11.github.io/reporte-mensual/pwa-512x512.png",
+            "maskableIconUrl": "https://alexrey11.github.io/reporte-mensual/pwa-512x512.png",
+            "webManifestUrl": "https://alexrey11.github.io/reporte-mensual/manifest.webmanifest",
+            "appVersionName": "1.0.0",
+            "appVersionCode": 1,
+            "signingKey": {
+              "path": "./android.keystore",
+              "alias": "${{ secrets.KEY_ALIAS }}"
+            },
+            "enableNotifications": false,
+            "generatorApp": "bubblewrap-cli",
+            "isChromeOSOnly": false,
+            "isMetaQuest": false,
+            "fullScopeUrl": "https://alexrey11.github.io/reporte-mensual/",
+            "minSdkVersion": 21,
+            "orientation": "portrait",
+            "fingerprints": [],
+            "additionalTrustedOrigins": [],
+            "retainedBundles": [],
+            "appVersion": "1.0.0"
+          }
+          EOF
+
+      - name: Generar Proyecto Android
+        run: |
+          # 🔥 Usamos el manifiesto LOCAL, no el remoto
+          bubblewrap init --manifest=./twa-manifest.json --directory ./android-project
+
+      - name: Compilar APK
         env:
           BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          # 🔥 AQUÍ ESTÁ EL CAMBIO: Usamos .webmanifest
-          yes "" | bubblewrap init --manifest https://alexrey11.github.io/reporte-mensual/manifest.webmanifest --directory ./android-project --skipPwaValidation
-          
           cp android.keystore ./android-project/android.keystore
           cd ./android-project
-          
-          yes "" | bubblewrap build
+          bubblewrap build
 
       - name: Subir APK Nativa
         uses: actions/upload-artifact@v4
