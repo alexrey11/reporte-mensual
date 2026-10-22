@@ -60,6 +60,16 @@ export default function ModuloView({ modulo, campos, viewMode, anio, mes, usuari
 
     useEffect(() => { cargar(); /* eslint-disable-next-line */ }, [modulo.id, anio, mes]);
 
+    // Escuchar evento para abrir modal desde la barra inferior
+    useEffect(() => {
+        const handleOpenModal = () => {
+            setEditando(null);
+            setModalOpen(true);
+        };
+        window.addEventListener('abrir-nuevo-registro', handleOpenModal);
+        return () => window.removeEventListener('abrir-nuevo-registro', handleOpenModal);
+    }, []);
+
     useEffect(() => { setCurrentPage(1); }, [busqueda, filtroEstado, fechaDesde, fechaHasta]);
 
     useEffect(() => {
@@ -107,7 +117,6 @@ export default function ModuloView({ modulo, campos, viewMode, anio, mes, usuari
             return;
         }
 
-        // 🔥 FIX: Buscar si hay un campo de fecha vinculado a este estado
         const campoAutoFecha = campos.find(c => c.autoFechaEstadoId === campoEstado.id);
         const debePonerFecha = campoAutoFecha && nuevoEstado === campoAutoFecha.autoFechaEstadoValor;
 
@@ -116,11 +125,8 @@ export default function ModuloView({ modulo, campos, viewMode, anio, mes, usuari
                 const reg = await db.registros.get(id);
                 if (reg) {
                     const historial = [...(reg.historial || []), { fecha: ahoraISO(), estado: nuevoEstado, usuario }];
-
-                    // Actualizamos los datos con el nuevo estado
                     const nuevosDatos = { ...reg.datos, [campoEstado.id]: nuevoEstado };
 
-                    // Si el estado es el que dispara la fecha, se la ponemos a todos los registros
                     if (debePonerFecha && campoAutoFecha) {
                         nuevosDatos[campoAutoFecha.id] = ahoraISO();
                     }
@@ -220,7 +226,7 @@ export default function ModuloView({ modulo, campos, viewMode, anio, mes, usuari
             <div className="module-head">
                 <h2 style={{ color: modulo.color }}>{modulo.icono} {modulo.nombre}</h2>
                 <div className="module-head-actions">
-                    <button className="btn-primary" onClick={() => { setEditando(null); setModalOpen(true); }}>
+                    <button className="btn-primary btn-tabla-desktop" onClick={() => { setEditando(null); setModalOpen(true); }}>
                         + Nuevo Registro (Alt+N)
                     </button>
                 </div>
@@ -267,7 +273,7 @@ export default function ModuloView({ modulo, campos, viewMode, anio, mes, usuari
                     <input type="date" value={fechaHasta} onChange={e => setFechaHasta(e.target.value)} className="filtro-select" title="Hasta" />
                 </div>
                 <button
-                    className="btn-ghost"
+                    className="btn-ghost btn-tabla-desktop"
                     onClick={() => exportarRegistrosAExcel(modulo, campos, registrosFiltrados)}
                     title="Exporta solo los registros que coinciden con tu búsqueda/filtros actuales"
                 >

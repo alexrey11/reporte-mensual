@@ -70,7 +70,6 @@ function App() {
       const cfg = await db.config.get('usuario');
       if (cfg?.valor) setUsuario(cfg.valor);
 
-      // Verificar si el usuario ya vio la guía
       const guiaVista = await db.config.get('guia_vista');
       if (!guiaVista?.valor && cfg?.valor) {
         setMostrarBienvenida(true);
@@ -86,7 +85,6 @@ function App() {
     await db.config.put({ clave: 'usuario', valor: loginInput.trim() });
     setUsuario(loginInput.trim());
 
-    // Verificar si debe mostrarse la bienvenida
     const guiaVista = await db.config.get('guia_vista');
     if (!guiaVista?.valor) {
       setMostrarBienvenida(true);
@@ -343,7 +341,6 @@ function App() {
       </header>
 
       <main className="app-main">
-        {/* Banner de Bienvenida - Solo aparece la primera vez */}
         {mostrarBienvenida && (
           <div className="bienvenida-banner">
             <div>
@@ -416,6 +413,28 @@ function App() {
       )}
 
       {guiaOpen && <Guia onClose={() => setGuiaOpen(false)} />}
+
+      {/* ==========================================
+          BARRA DE NAVEGACIÓN INFERIOR (MÓVIL)
+          ========================================== */}
+      <nav className="mobile-bottom-nav">
+        <button onClick={() => setGlobalMenuOpen(true)}>
+          <span className="icon">☰</span>
+          <span>Menú</span>
+        </button>
+        <button onClick={() => setViewMode('cards')}>
+          <span className="icon">📋</span>
+          <span>Tarjetas</span>
+        </button>
+        <button onClick={() => { window.dispatchEvent(new Event('abrir-nuevo-registro')); }}>
+          <span className="icon" style={{ fontSize: 24, color: 'var(--primary)' }}>➕</span>
+          <span style={{ color: 'var(--primary)' }}>Nuevo</span>
+        </button>
+        <button onClick={() => setViewMode('table')}>
+          <span className="icon">📊</span>
+          <span>Tabla</span>
+        </button>
+      </nav>
 
       <PWAInstallPrompt />
       <div id="pdf-render-area" style={{ position: 'fixed', left: '-99999px', top: 0 }} />

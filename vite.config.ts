@@ -1,18 +1,18 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
-import { viteSingleFile } from 'vite-plugin-singlefile';
 import { fileURLToPath, URL } from 'node:url';
 
-
+// https://vitejs.dev/config/
 export default defineConfig({
+  // IMPORTANTE: Debe coincidir con el nombre de tu repositorio
   base: '/reporte-mensual/',
+
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      // No inyectar el SW automáticamente para evitar conflictos en file://
-      injectRegister: false,
+      injectRegister: 'auto', // Dejamos que VitePWA lo inyecte correctamente
       manifest: {
         name: 'ReporteMensual',
         short_name: 'ReporteMensual',
@@ -20,8 +20,9 @@ export default defineConfig({
         theme_color: '#0f172a',
         background_color: '#0f172a',
         display: 'standalone',
-        start_url: '/',
-        scope: '/',
+        // CRÍTICO: Estas rutas deben coincidir con el 'base'
+        start_url: '/reporte-mensual/',
+        scope: '/reporte-mensual/',
         icons: [
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
           { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
@@ -32,7 +33,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff,woff2}'],
       },
     }),
-    viteSingleFile(),
+    // 🔥 ELIMINADO: viteSingleFile() ya no es necesario para la web
   ],
   resolve: {
     alias: {
@@ -42,11 +43,5 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
-  build: {
-    // Necesario para que viteSingleFile incruste todo en un solo HTML
-    assetsInlineLimit: 100000000,
-    cssCodeSplit: false,
-    // Evita warnings de chunk size (es normal con single file)
-    chunkSizeWarningLimit: 5000,
-  },
+  // Eliminadas las configuraciones de build para single-file
 });
