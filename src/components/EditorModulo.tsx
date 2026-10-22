@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { db, uuid, type Modulo, type Campo, type TipoCampo } from '@/lib/db';
+import { Edit3, Trash2, X, GripVertical, Plus } from 'lucide-react';
 
 interface Props {
     modulo: Modulo | null;
@@ -13,7 +14,7 @@ const TIPOS: TipoCampo[] = ['texto', 'textarea', 'numero', 'telefono', 'correo',
 export default function EditorModulo({ modulo, campos, onClose, onSave }: Props) {
     const [nombre, setNombre] = useState(modulo?.nombre ?? '');
     const [icono, setIcono] = useState(modulo?.icono ?? '📄');
-    const [color, setColor] = useState(modulo?.color ?? '#8b5cf6');
+    const [color, setColor] = useState(modulo?.color ?? '#0d9488'); // Color teal por defecto
     const [lista, setLista] = useState<Campo[]>(campos.map(c => ({ ...c })));
     const [editandoCampo, setEditandoCampo] = useState<{ campo: Campo | null; index: number } | null>(null);
     const [dragIdx, setDragIdx] = useState<number | null>(null);
@@ -58,8 +59,9 @@ export default function EditorModulo({ modulo, campos, onClose, onSave }: Props)
             <div className="modal-panel" onClick={e => e.stopPropagation()}>
                 <div className="modal-header">
                     <h3>{modulo ? 'Editar módulo' : 'Nuevo módulo'}</h3>
-                    <button className="btn-icon-close" onClick={onClose}>✕</button>
+                    <button className="btn-icon-close" onClick={onClose}><X size={20} /></button>
                 </div>
+
                 <div className="modal-body">
                     <div className="form-grid">
                         <label>Nombre del módulo
@@ -69,47 +71,73 @@ export default function EditorModulo({ modulo, campos, onClose, onSave }: Props)
                             <input value={icono} onChange={e => setIcono(e.target.value)} maxLength={4} />
                         </label>
                         <label>Color
-                            <input type="color" value={color} onChange={e => setColor(e.target.value)} style={{ height: 38, padding: 4 }} />
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                <input
+                                    type="color"
+                                    value={color}
+                                    onChange={e => setColor(e.target.value)}
+                                    style={{ width: 48, height: 44, padding: 2, borderRadius: 8, cursor: 'pointer', border: '1px solid var(--border)' }}
+                                />
+                                <span style={{ fontSize: 14, color: 'var(--text-muted)', fontWeight: 500 }}>{color.toUpperCase()}</span>
+                            </div>
                         </label>
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 20, marginBottom: 10 }}>
-                        <strong>Campos del módulo</strong>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 24, marginBottom: 12 }}>
+                        <strong style={{ fontSize: 15 }}>Campos del módulo</strong>
                         <button
                             type="button"
                             className="btn-primary"
-                            style={{ padding: '6px 12px', fontSize: 13 }}
+                            style={{ padding: '8px 14px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}
                             onClick={() => setEditandoCampo({ campo: null, index: -1 })}
                         >
-                            + Agregar campo
+                            <Plus size={16} /> Agregar campo
                         </button>
                     </div>
 
-                    <div className="field-list">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                         {lista.length === 0 && (
-                            <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Aún no hay campos. Agrega al menos uno.</p>
+                            <div style={{ textAlign: 'center', padding: '30px 20px', background: 'var(--bg)', borderRadius: 12, border: '1px dashed var(--border)' }}>
+                                <p style={{ color: 'var(--text-muted)', fontSize: 14, margin: 0 }}>Aún no hay campos. Agrega al menos uno.</p>
+                            </div>
                         )}
                         {lista.map((c, i) => (
                             <div
                                 key={c.id}
-                                className={`field-item ${dragIdx === i ? 'dragging' : ''}`}
                                 draggable
                                 onDragStart={() => setDragIdx(i)}
                                 onDragEnd={() => setDragIdx(null)}
                                 onDragOver={e => e.preventDefault()}
                                 onDrop={() => { if (dragIdx !== null && dragIdx !== i) reorder(dragIdx, i); setDragIdx(null); }}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 12,
+                                    padding: '12px 16px',
+                                    background: dragIdx === i ? '#f0fdfa' : 'var(--surface)',
+                                    border: '1px solid var(--border)',
+                                    borderRadius: 12,
+                                    boxShadow: dragIdx === i ? '0 4px 12px rgba(0,0,0,0.05)' : 'var(--shadow-sm)',
+                                    cursor: 'grab',
+                                    opacity: dragIdx === i ? 0.7 : 1,
+                                    transition: 'all 0.2s'
+                                }}
                             >
-                                <span className="drag-handle">⋮⋮</span>
-                                <div className="field-info">
-                                    <strong>{c.etiqueta}</strong>
-                                    <span className="field-type">{c.tipo}</span>
-                                    {c.requerido && <span className="badge-tag">Req</span>}
-                                    {c.mostrarEnTabla && <span className="badge-tag">Tabla</span>}
-                                    {c.autoFechaCreacion && <span className="badge-tag">Auto</span>}
-                                    {c.autoFechaEstadoId && <span className="badge-tag">Auto-Estado</span>}
+                                <GripVertical size={18} color="#94a3b8" style={{ cursor: 'grab', flexShrink: 0 }} />
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                                        <strong style={{ fontSize: 14, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.etiqueta}</strong>
+                                        <span style={{ fontSize: 11, background: 'var(--bg)', padding: '2px 8px', borderRadius: 6, color: 'var(--text-muted)', fontWeight: 600 }}>{c.tipo}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                        {c.requerido && <span style={{ fontSize: 10, background: '#fee2e2', color: '#dc2626', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>Req</span>}
+                                        {c.mostrarEnTabla && <span style={{ fontSize: 10, background: '#e0f2fe', color: '#0284c7', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>Tabla</span>}
+                                        {c.autoFechaCreacion && <span style={{ fontSize: 10, background: '#f3e8ff', color: '#9333ea', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>Auto</span>}
+                                        {c.autoFechaEstadoId && <span style={{ fontSize: 10, background: '#fef3c7', color: '#d97706', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>Auto-Estado</span>}
+                                    </div>
                                 </div>
-                                <div className="actions">
-                                    <button type="button" className="btn-icon" onClick={() => setEditandoCampo({ campo: c, index: i })}>✎</button>
+                                <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                                    <button type="button" className="btn-icon" onClick={() => setEditandoCampo({ campo: c, index: i })}><Edit3 size={16} /></button>
                                     <button
                                         type="button"
                                         className="btn-icon btn-danger"
@@ -119,7 +147,7 @@ export default function EditorModulo({ modulo, campos, onClose, onSave }: Props)
                                             }
                                         }}
                                     >
-                                        🗑
+                                        <Trash2 size={16} />
                                     </button>
                                 </div>
                             </div>
@@ -150,13 +178,14 @@ export default function EditorModulo({ modulo, campos, onClose, onSave }: Props)
     );
 }
 
-/* ---------- Editor de campo ---------- */
+/* ---------- Editor de campo (Sub-modal) ---------- */
 interface FieldEditorProps {
     campo: Campo | null;
     selectsDelModulo: Campo[];
     onClose: () => void;
     onSave: (campo: Campo) => void;
 }
+
 function FieldEditor({ campo, selectsDelModulo, onClose, onSave }: FieldEditorProps) {
     const [etiqueta, setEtiqueta] = useState(campo?.etiqueta ?? '');
     const [tipo, setTipo] = useState<TipoCampo>(campo?.tipo ?? 'texto');
@@ -207,11 +236,11 @@ function FieldEditor({ campo, selectsDelModulo, onClose, onSave }: FieldEditorPr
     }
 
     return (
-        <div className="modal-overlay modal-nested" onClick={onClose}>
-            <div className="modal-panel" onClick={e => e.stopPropagation()} style={{ maxWidth: 560 }}>
+        <div className="modal-overlay" onClick={onClose} style={{ zIndex: 1000 }}>
+            <div className="modal-panel" onClick={e => e.stopPropagation()} style={{ maxWidth: 600 }}>
                 <div className="modal-header">
                     <h3>{campo ? 'Editar campo' : 'Nuevo campo'}</h3>
-                    <button className="btn-icon-close" onClick={onClose}>✕</button>
+                    <button className="btn-icon-close" onClick={onClose}><X size={20} /></button>
                 </div>
                 <div className="modal-body">
                     <div className="form-grid">
@@ -234,24 +263,24 @@ function FieldEditor({ campo, selectsDelModulo, onClose, onSave }: FieldEditorPr
 
                     {tipo === 'select' && opcsLive.length > 0 && (
                         <>
-                            <label style={{ marginTop: 12 }}>¿Qué opción cuenta como <b>completada</b>?
+                            <label style={{ marginTop: 16 }}>¿Qué opción cuenta como <b>completada</b>?
                                 <select value={estadoCompletado} onChange={e => setEstadoCompletado(e.target.value)}>
                                     <option value="">— Automático (por nombre) —</option>
                                     {opcsLive.map(o => <option key={o} value={o}>{o}</option>)}
                                 </select>
                             </label>
 
-                            <div style={{ marginTop: 12 }}>
+                            <div style={{ marginTop: 16 }}>
                                 <strong style={{ fontSize: 13 }}>Colores por opción</strong>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 6 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
                                     {opcsLive.map(o => (
-                                        <div key={o} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                            <span style={{ flex: 1, fontSize: 13 }}>{o}</span>
+                                        <div key={o} style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'var(--bg)', padding: '8px 12px', borderRadius: 8 }}>
+                                            <span style={{ flex: 1, fontSize: 14, fontWeight: 500 }}>{o}</span>
                                             <input
                                                 type="color"
                                                 value={coloresOpciones[o] || colorDefault(o)}
                                                 onChange={e => setColoresOpciones({ ...coloresOpciones, [o]: e.target.value })}
-                                                style={{ width: 40, height: 30, padding: 2 }}
+                                                style={{ width: 36, height: 32, padding: 2, borderRadius: 6, border: '1px solid var(--border)', cursor: 'pointer' }}
                                             />
                                         </div>
                                     ))}
@@ -267,20 +296,35 @@ function FieldEditor({ campo, selectsDelModulo, onClose, onSave }: FieldEditorPr
                         </div>
                     )}
 
-                    <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        <label className="checkbox-label"><input type="checkbox" checked={requerido} onChange={e => setRequerido(e.target.checked)} /> Requerido</label>
-                        <label className="checkbox-label"><input type="checkbox" checked={mostrarEnTabla} onChange={e => setMostrarEnTabla(e.target.checked)} /> Mostrar en tabla</label>
+                    <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        <label className="checkbox-label">
+                            <input type="checkbox" checked={requerido} onChange={e => setRequerido(e.target.checked)} />
+                            <span>Campo requerido</span>
+                        </label>
+                        <label className="checkbox-label">
+                            <input type="checkbox" checked={mostrarEnTabla} onChange={e => setMostrarEnTabla(e.target.checked)} />
+                            <span>Mostrar en tabla</span>
+                        </label>
                         {tipo === 'fecha_hora' && (
-                            <label className="checkbox-label"><input type="checkbox" checked={autoFechaCreacion} onChange={e => setAutoFechaCreacion(e.target.checked)} /> Auto-rellenar con fecha/hora al crear</label>
+                            <label className="checkbox-label">
+                                <input type="checkbox" checked={autoFechaCreacion} onChange={e => setAutoFechaCreacion(e.target.checked)} />
+                                <span>Auto-rellenar con fecha/hora al crear</span>
+                            </label>
                         )}
                         {tipo === 'fecha' && (
-                            <label className="checkbox-label"><input type="checkbox" checked={noFuturo} onChange={e => setNoFuturo(e.target.checked)} /> No permitir fechas futuras</label>
+                            <label className="checkbox-label">
+                                <input type="checkbox" checked={noFuturo} onChange={e => setNoFuturo(e.target.checked)} />
+                                <span>No permitir fechas futuras</span>
+                            </label>
                         )}
                     </div>
 
                     {selectsDelModulo.length > 0 && tipo === 'fecha_hora' && (
-                        <div className="form-grid" style={{ marginTop: 14 }}>
-                            <label>Auto-fecha al cambiar select
+                        <div className="form-grid" style={{ marginTop: 20, padding: 16, background: 'var(--bg)', borderRadius: 12 }}>
+                            <label style={{ gridColumn: '1 / -1', margin: 0, fontWeight: 700, fontSize: 12, textTransform: 'uppercase', color: 'var(--primary)' }}>
+                                Auto-fecha por cambio de estado
+                            </label>
+                            <label>Campo Select
                                 <select value={autoFechaEstadoId} onChange={e => { setAutoFechaEstadoId(e.target.value); setAutoFechaEstadoValor(''); }}>
                                     <option value="">— Ninguno —</option>
                                     {selectsDelModulo.map(s => <option key={s.id} value={s.id}>{s.etiqueta}</option>)}

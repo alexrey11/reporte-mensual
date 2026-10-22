@@ -28,9 +28,8 @@ export interface Campo {
   min?: number;
   max?: number;
   noFuturo?: boolean;
-  // NUEVOS
-  estadoCompletado?: string | null; // Qué opción del select cuenta como "completado"
-  coloresOpciones?: Record<string, string>; // { "Terminado": "#16a34a", ... }
+  estadoCompletado?: string | null;
+  coloresOpciones?: Record<string, string>;
 }
 
 export interface HistorialEntry {
@@ -128,7 +127,7 @@ export function tiempoRelativo(iso: string): string {
   return `${Math.floor(diff / 86400)}d`;
 }
 
-/* ---------- Semilla ---------- */
+/* ---------- Semilla: UN módulo General universal ---------- */
 let seedPromise: Promise<void> | null = null;
 
 export function seedIfEmpty(): Promise<void> {
@@ -141,56 +140,76 @@ export function seedIfEmpty(): Promise<void> {
     }
 
     const now = ahoraISO();
+    const modId = uuid();
 
-    /* --- Módulo A: Reportes Generales --- */
-    const modAId = uuid();
-    await db.modulos.add({ id: modAId, nombre: 'Reportes Generales', icono: '📡', color: '#3b82f6', orden: 0, creadoEn: now });
+    await db.modulos.add({
+      id: modId,
+      nombre: 'Reportes Generales',
+      icono: '📡',
+      color: '#0d9488',
+      orden: 0,
+      creadoEn: now,
+    });
 
-    const estadoAId = uuid();
-    const camposA: Omit<Campo, 'moduloId' | 'orden'>[] = [
-      { id: uuid(), etiqueta: 'Fecha y hora de recibo', tipo: 'fecha_hora', requerido: false, mostrarEnTabla: true, opciones: [], autoFechaCreacion: true, autoFechaEstadoId: null, autoFechaEstadoValor: null },
-      { id: uuid(), etiqueta: 'Grado', tipo: 'texto', requerido: true, mostrarEnTabla: true, opciones: [], autoFechaCreacion: false, autoFechaEstadoId: null, autoFechaEstadoValor: null },
+    const estadoId = uuid();
+    const campos: Omit<Campo, 'moduloId' | 'orden'>[] = [
+      // 1. Fecha y hora de recibo (auto)
+      { id: uuid(), etiqueta: 'Fecha y hora de recibo', tipo: 'fecha_hora', requerido: true, mostrarEnTabla: true, opciones: [], autoFechaCreacion: true, autoFechaEstadoId: null, autoFechaEstadoValor: null },
+
+      // 2. Nombre y apellidos
       { id: uuid(), etiqueta: 'Nombre y Apellidos', tipo: 'texto', requerido: true, mostrarEnTabla: true, opciones: [], autoFechaCreacion: false, autoFechaEstadoId: null, autoFechaEstadoValor: null },
-      { id: uuid(), etiqueta: 'Departamento', tipo: 'texto', requerido: false, mostrarEnTabla: true, opciones: [], autoFechaCreacion: false, autoFechaEstadoId: null, autoFechaEstadoValor: null },
-      { id: uuid(), etiqueta: '¿Qué reportó?', tipo: 'textarea', requerido: true, mostrarEnTabla: false, opciones: [], autoFechaCreacion: false, autoFechaEstadoId: null, autoFechaEstadoValor: null },
+
+      // 3. Departamento
+      { id: uuid(), etiqueta: 'Departamento', tipo: 'texto', requerido: true, mostrarEnTabla: true, opciones: [], autoFechaCreacion: false, autoFechaEstadoId: null, autoFechaEstadoValor: null },
+
+      // 4. Reporte (¿Qué reportó?)
+      { id: uuid(), etiqueta: 'Reporte', tipo: 'textarea', requerido: true, mostrarEnTabla: true, opciones: [], autoFechaCreacion: false, autoFechaEstadoId: null, autoFechaEstadoValor: null },
+
+      // 5. Estado
       {
-        id: estadoAId, etiqueta: 'Estado', tipo: 'select', requerido: false, mostrarEnTabla: true,
-        opciones: ['En proceso', 'Terminado'],
+        id: estadoId, etiqueta: 'Estado', tipo: 'select', requerido: true, mostrarEnTabla: true,
+        opciones: ['Pendiente', 'En proceso', 'Terminado', 'Cancelado'],
         autoFechaCreacion: false, autoFechaEstadoId: null, autoFechaEstadoValor: null,
         estadoCompletado: 'Terminado',
-        coloresOpciones: { 'En proceso': '#f59e0b', 'Terminado': '#16a34a' },
+        coloresOpciones: {
+          'Pendiente': '#f59e0b',
+          'En proceso': '#3b82f6',
+          'Terminado': '#16a34a',
+          'Cancelado': '#64748b',
+        },
       },
-      { id: uuid(), etiqueta: 'Fecha y hora de finalización', tipo: 'fecha_hora', requerido: false, mostrarEnTabla: true, opciones: [], autoFechaCreacion: false, autoFechaEstadoId: estadoAId, autoFechaEstadoValor: 'Terminado' },
+
+      // 6. Fecha y hora de finalización (auto cuando pasa a Terminado)
+      { id: uuid(), etiqueta: 'Fecha y hora de finalización', tipo: 'fecha_hora', requerido: false, mostrarEnTabla: true, opciones: [], autoFechaCreacion: false, autoFechaEstadoId: estadoId, autoFechaEstadoValor: 'Terminado' },
+
+      // 7. Observaciones
       { id: uuid(), etiqueta: 'Observaciones', tipo: 'textarea', requerido: false, mostrarEnTabla: false, opciones: [], autoFechaCreacion: false, autoFechaEstadoId: null, autoFechaEstadoValor: null },
     ];
-    for (let i = 0; i < camposA.length; i++) await db.campos.add({ ...camposA[i], moduloId: modAId, orden: i });
+    for (let i = 0; i < campos.length; i++) {
+      await db.campos.add({ ...campos[i], moduloId: modId, orden: i });
+    }
 
-    /* --- Módulo B: Registro Venceremos --- */
-    const modBId = uuid();
-    await db.modulos.add({ id: modBId, nombre: 'Registro Venceremos', icono: '📲', color: '#10b981', orden: 1, creadoEn: now });
-
-    const estadoBId = uuid();
-    const camposB: Omit<Campo, 'moduloId' | 'orden'>[] = [
-      { id: uuid(), etiqueta: 'Cargo', tipo: 'texto', requerido: false, mostrarEnTabla: true, opciones: [], autoFechaCreacion: false, autoFechaEstadoId: null, autoFechaEstadoValor: null },
-      { id: uuid(), etiqueta: 'Grado - Nombre y Apellidos', tipo: 'texto', requerido: true, mostrarEnTabla: true, opciones: [], autoFechaCreacion: false, autoFechaEstadoId: null, autoFechaEstadoValor: null },
-      { id: uuid(), etiqueta: 'Usuario AD', tipo: 'texto', requerido: false, mostrarEnTabla: true, opciones: [], autoFechaCreacion: false, autoFechaEstadoId: null, autoFechaEstadoValor: null },
-      { id: uuid(), etiqueta: 'Número de teléfono', tipo: 'telefono', requerido: false, mostrarEnTabla: true, opciones: [], autoFechaCreacion: false, autoFechaEstadoId: null, autoFechaEstadoValor: null },
-      { id: uuid(), etiqueta: 'Extensión', tipo: 'texto', requerido: false, mostrarEnTabla: false, opciones: [], autoFechaCreacion: false, autoFechaEstadoId: null, autoFechaEstadoValor: null },
-      { id: uuid(), etiqueta: 'Certificado', tipo: 'texto', requerido: false, mostrarEnTabla: false, opciones: [], autoFechaCreacion: false, autoFechaEstadoId: null, autoFechaEstadoValor: null },
-      { id: uuid(), etiqueta: 'Pin de Venceremos', tipo: 'texto', requerido: false, mostrarEnTabla: false, opciones: [], autoFechaCreacion: false, autoFechaEstadoId: null, autoFechaEstadoValor: null },
-      { id: uuid(), etiqueta: 'Fecha de Instalación', tipo: 'fecha_hora', requerido: false, mostrarEnTabla: true, opciones: [], autoFechaCreacion: true, autoFechaEstadoId: null, autoFechaEstadoValor: null },
-      { id: uuid(), etiqueta: 'Observaciones', tipo: 'textarea', requerido: false, mostrarEnTabla: false, opciones: [], autoFechaCreacion: false, autoFechaEstadoId: null, autoFechaEstadoValor: null },
-      {
-        id: estadoBId, etiqueta: 'Estado', tipo: 'select', requerido: false, mostrarEnTabla: true,
-        opciones: ['Instalado', 'Pendiente', 'Con error'],
-        autoFechaCreacion: false, autoFechaEstadoId: null, autoFechaEstadoValor: null,
-        estadoCompletado: 'Instalado',
-        coloresOpciones: { 'Instalado': '#16a34a', 'Pendiente': '#f59e0b', 'Con error': '#dc2626' },
+    // Registro de ejemplo didáctico
+    const byLabel = (lbl: string) => campos.find(x => x.etiqueta === lbl)!.id;
+    await db.registros.add({
+      id: uuid(),
+      moduloId: modId,
+      creadoEn: now,
+      actualizadoEn: now,
+      datos: {
+        [byLabel('Fecha y hora de recibo')]: new Date().toISOString(),
+        [byLabel('Nombre y Apellidos')]: 'Ejemplo — Juan Pérez',
+        [byLabel('Departamento')]: 'Sistemas',
+        [byLabel('Reporte')]: 'Registro de ejemplo: el usuario no podía acceder a su correo. Se reinició el perfil y quedó funcionando. Puedes editar o borrar este registro cuando empieces a trabajar.',
+        [byLabel('Estado')]: 'Terminado',
+        [byLabel('Fecha y hora de finalización')]: new Date().toISOString(),
+        [byLabel('Observaciones')]: 'Este es un registro de ejemplo. Bórralo cuando empieces.',
       },
-    ];
-    for (let i = 0; i < camposB.length; i++) await db.campos.add({ ...camposB[i], moduloId: modBId, orden: i });
+      historial: [{ fecha: now, estado: 'Terminado', usuario: 'Sistema (ejemplo)' }],
+    });
 
     await db.config.put({ clave: 'seed_hecho', valor: true });
+    await db.config.put({ clave: 'general_modulo_id', valor: modId });
   })();
   return seedPromise;
 }
