@@ -1,7 +1,7 @@
 name: Build Native APK
 
 on:
-  workflow_dispatch: # Permite ejecutarlo manualmente
+  workflow_dispatch:
 
 jobs:
   build:
@@ -23,6 +23,13 @@ jobs:
 
       - name: Instalar Bubblewrap CLI
         run: npm install -g @bubblewrap/cli
+
+      # 🔥 ESTE ES EL PASO NUEVO Y CLAVE 🔥
+      # Le decimos a Bubblewrap dónde está el JDK y el SDK de Android
+      # para que no pregunte nada y no se quede colgado.
+      - name: Configurar rutas de Android
+        run: |
+          npx @bubblewrap/cli updateConfig --jdkPath="$JAVA_HOME" --androidSdkPath="$ANDROID_HOME"
 
       - name: Decodificar el Keystore
         run: echo "${{ secrets.KEYSTORE_FILE }}" | base64 --decode > android.keystore
