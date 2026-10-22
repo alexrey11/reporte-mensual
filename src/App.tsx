@@ -13,7 +13,7 @@ import Guia from '@/components/Guia';
 import Estadisticas from '@/components/Estadisticas';
 import AppIcon from '@/components/AppIcon';
 import {
-  Menu, Plus, Settings, Download, FileText, FileSpreadsheet,
+  Plus, Settings, Download, FileText, FileSpreadsheet,
   FolderOpen, Edit3, Copy, Trash2, BookOpen, Save, Upload,
   LayoutGrid, X, ChevronRight, BarChart3
 } from 'lucide-react';
@@ -235,10 +235,34 @@ function App() {
   const anios = [hoy.getFullYear() - 1, hoy.getFullYear(), hoy.getFullYear() + 1];
   const actual = modulos.find(m => m.id === actualId) ?? null;
 
-  const menuItemStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '12px 16px', border: 'none', background: 'transparent', color: 'var(--text)', cursor: 'pointer', borderRadius: 12, fontSize: 14, textAlign: 'left', fontWeight: 500 };
-  const menuDangerStyle: React.CSSProperties = { ...menuItemStyle, color: '#dc2626' };
-  const dividerStyle: React.CSSProperties = { height: 1, background: 'var(--border)', margin: '8px 0' };
-  const sectionTitleStyle: React.CSSProperties = { fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '12px 16px 4px' };
+  /* =========================================================
+     ESTILOS DEL MENÚ — todos con contraste garantizado
+     ========================================================= */
+  const menuItemStyle: React.CSSProperties = {
+    display: 'flex', alignItems: 'center', gap: 12, width: '100%',
+    padding: '12px 16px', border: 'none',
+    background: 'transparent',
+    color: '#0f172a',
+    cursor: 'pointer', borderRadius: 12,
+    fontSize: 14, textAlign: 'left', fontWeight: 500,
+  };
+  const menuDangerStyle: React.CSSProperties = {
+    ...menuItemStyle, color: '#dc2626',
+  };
+  const menuHighlightStyle: React.CSSProperties = {
+    ...menuItemStyle,
+    background: '#f0fdfa',
+    color: '#0f766e',
+    fontWeight: 700,
+  };
+  const dividerStyle: React.CSSProperties = {
+    height: 1, background: 'var(--border)', margin: '8px 0',
+  };
+  const sectionTitleStyle: React.CSSProperties = {
+    fontSize: 11, fontWeight: 700, color: '#64748b',
+    textTransform: 'uppercase', letterSpacing: '0.05em',
+    padding: '12px 16px 4px',
+  };
 
   return (
     <div className="app-shell">
@@ -300,14 +324,14 @@ function App() {
                       {actual && (
                         <>
                           <div style={sectionTitleStyle}>Módulo: {actual.nombre}</div>
-                          <button style={menuItemStyle} onClick={() => { setEstadisticasOpen(true); setGlobalMenuOpen(false); }}>
-                            <BarChart3 size={18} color="var(--primary)" /> <span style={{ color: 'var(--primary)', fontWeight: 600 }}>Ver Estadísticas</span>
+                          <button style={menuHighlightStyle} onClick={() => { setEstadisticasOpen(true); setGlobalMenuOpen(false); }}>
+                            <BarChart3 size={18} color="#0f766e" /> Ver Estadísticas
                           </button>
                           <button style={menuItemStyle} onClick={() => { setViewMode(viewMode === 'table' ? 'cards' : 'table'); setGlobalMenuOpen(false); }}>
-                            <LayoutGrid size={18} color="var(--text-muted)" /> {viewMode === 'table' ? 'Ver como Tarjetas' : 'Ver como Tabla'}
+                            <LayoutGrid size={18} color="#64748b" /> {viewMode === 'table' ? 'Ver como Tarjetas' : 'Ver como Tabla'}
                           </button>
                           <div style={{ padding: '6px 16px' }}>
-                            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>Columnas visibles</div>
+                            <div style={{ fontSize: 11, fontWeight: 600, color: '#64748b', marginBottom: 6 }}>Columnas visibles</div>
                             <div style={{ maxHeight: 150, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
                               {camposActuales.map(c => (
                                 <label key={c.id} className="menu-checkbox-item">
@@ -319,19 +343,19 @@ function App() {
                           </div>
                           <div style={dividerStyle} />
                           <button style={menuItemStyle} onClick={() => { setImportExcelGlobalOpen(true); setGlobalMenuOpen(false); }}>
-                            <Download size={18} color="var(--text-muted)" /> Importar Excel
+                            <Download size={18} color="#64748b" /> Importar Excel
                           </button>
                           <button style={menuItemStyle} onClick={() => { exportarPlantilla(actual.id); setGlobalMenuOpen(false); }}>
-                            <Save size={18} color="var(--text-muted)" /> Exportar Plantilla
+                            <Save size={18} color="#64748b" /> Exportar Plantilla
                           </button>
                           <button style={menuItemStyle} onClick={() => { exportarModuloCompleto(actual.id); setGlobalMenuOpen(false); }}>
-                            <Save size={18} color="var(--text-muted)" /> Exportar Módulo
+                            <Save size={18} color="#64748b" /> Exportar Módulo
                           </button>
                           <button style={menuItemStyle} onClick={abrirEditarModulo}>
-                            <Edit3 size={18} color="var(--text-muted)" /> Editar Módulo
+                            <Edit3 size={18} color="#64748b" /> Editar Módulo
                           </button>
                           <button style={menuItemStyle} onClick={duplicarModulo}>
-                            <Copy size={18} color="var(--text-muted)" /> Duplicar Módulo
+                            <Copy size={18} color="#64748b" /> Duplicar Módulo
                           </button>
                           <button style={menuDangerStyle} onClick={eliminarModulo}>
                             <Trash2 size={18} /> Eliminar Módulo
@@ -341,7 +365,7 @@ function App() {
                       )}
                       <div style={sectionTitleStyle}>Global</div>
                       <button style={menuItemStyle} onClick={abrirNuevoModulo}>
-                        <Plus size={18} color="var(--text-muted)" /> Nuevo Módulo
+                        <Plus size={18} color="#64748b" /> Nuevo Módulo
                       </button>
                       <div style={dividerStyle} />
                       <div style={sectionTitleStyle}>Exportar</div>
@@ -360,17 +384,17 @@ function App() {
                       <div style={dividerStyle} />
                       <div style={sectionTitleStyle}>Sistema</div>
                       <button style={menuItemStyle} onClick={() => { setGuiaOpen(true); setGlobalMenuOpen(false); }}>
-                        <BookOpen size={18} color="var(--text-muted)" /> Ver Guía de Uso
+                        <BookOpen size={18} color="#64748b" /> Ver Guía de Uso
                       </button>
                       <button style={menuItemStyle} onClick={exportarBackup}>
-                        <Save size={18} color="var(--text-muted)" /> Backup JSON
+                        <Save size={18} color="#64748b" /> Backup JSON
                       </button>
                       <label style={menuItemStyle}>
-                        <Upload size={18} color="var(--text-muted)" /> Restaurar Backup
+                        <Upload size={18} color="#64748b" /> Restaurar Backup
                         <input type="file" accept=".json" hidden onChange={handleImportarBackup} />
                       </label>
                       <label style={menuItemStyle}>
-                        <Upload size={18} color="var(--text-muted)" /> Importar Plantilla
+                        <Upload size={18} color="#64748b" /> Importar Plantilla
                         <input type="file" accept=".json" hidden onChange={handleImportarPlantilla} />
                       </label>
                     </div>
@@ -437,18 +461,7 @@ function App() {
         <p style={{ margin: 0 }}>ReporteMensual · Offline · Tte. Alejandro de la Cuesta Rey</p>
       </footer>
 
-      {/* FAB móvil */}
-      {isMobile && actual && (
-        <button
-          className="fab"
-          onClick={() => window.dispatchEvent(new Event('abrir-nuevo-registro'))}
-          aria-label="Nuevo registro"
-        >
-          <Plus size={28} />
-        </button>
-      )}
-
-      {/* Menú móvil */}
+      {/* ============ MENÚ MÓVIL (Bottom Sheet) — contraste garantizado ============ */}
       {isMobile && globalMenuOpen && (
         <div className="modal-overlay" onClick={() => setGlobalMenuOpen(false)} style={{ zIndex: 10000, alignItems: 'flex-end' }}>
           <div
@@ -456,33 +469,46 @@ function App() {
             onClick={e => e.stopPropagation()}
             style={{
               position: 'relative', bottom: 'auto', left: 'auto', right: 'auto',
-              width: '100%', borderRadius: '24px 24px 0 0', maxHeight: '80vh',
+              width: '100%',
+              background: '#ffffff',
+              color: '#0f172a',
+              borderRadius: '24px 24px 0 0',
+              maxHeight: '80vh',
               paddingBottom: 'env(safe-area-inset-bottom)',
-              animation: 'slideUp 0.2s ease-out'
+              animation: 'slideUp 0.2s ease-out',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 -20px 40px rgba(15, 23, 42, 0.2)',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 12, paddingBottom: 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 12, paddingBottom: 8, flexShrink: 0 }}>
               <div style={{ width: 40, height: 4, borderRadius: 2, background: '#cbd5e1' }} />
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 20px 12px' }}>
-              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Opciones</h3>
-              <button className="btn-icon-close" onClick={() => setGlobalMenuOpen(false)}><X size={20} /></button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 20px 12px', flexShrink: 0 }}>
+              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#0f172a' }}>Opciones</h3>
+              <button
+                className="btn-icon-close"
+                onClick={() => setGlobalMenuOpen(false)}
+                style={{ background: '#f1f5f9', color: '#475569' }}
+              >
+                <X size={20} />
+              </button>
             </div>
-            <div style={{ overflowY: 'auto', maxHeight: '60vh', padding: '0 12px 16px' }}>
+            <div style={{ overflowY: 'auto', maxHeight: '65vh', padding: '0 12px 16px' }}>
               {actual && (
                 <>
                   <div style={sectionTitleStyle}>Módulo: {actual.nombre}</div>
-                  <button style={menuItemStyle} onClick={() => { setEstadisticasOpen(true); setGlobalMenuOpen(false); }}>
-                    <BarChart3 size={20} color="var(--primary)" /> <span style={{ color: 'var(--primary)', fontWeight: 600 }}>Ver Estadísticas</span>
+                  <button style={menuHighlightStyle} onClick={() => { setEstadisticasOpen(true); setGlobalMenuOpen(false); }}>
+                    <BarChart3 size={20} color="#0f766e" /> Ver Estadísticas
                   </button>
                   <button style={menuItemStyle} onClick={() => { setImportExcelGlobalOpen(true); setGlobalMenuOpen(false); }}>
-                    <Download size={20} color="var(--text-muted)" /> Importar Excel
+                    <Download size={20} color="#64748b" /> Importar Excel
                   </button>
                   <button style={menuItemStyle} onClick={() => { exportarPlantilla(actual.id); setGlobalMenuOpen(false); }}>
-                    <Save size={20} color="var(--text-muted)" /> Exportar Plantilla
+                    <Save size={20} color="#64748b" /> Exportar Plantilla
                   </button>
                   <button style={menuItemStyle} onClick={abrirEditarModulo}>
-                    <Edit3 size={20} color="var(--text-muted)" /> Editar Módulo
+                    <Edit3 size={20} color="#64748b" /> Editar Módulo
                   </button>
                   <button style={menuDangerStyle} onClick={eliminarModulo}>
                     <Trash2 size={20} /> Eliminar Módulo
@@ -492,7 +518,7 @@ function App() {
               )}
               <div style={sectionTitleStyle}>Global</div>
               <button style={menuItemStyle} onClick={abrirNuevoModulo}>
-                <Plus size={20} color="var(--text-muted)" /> Nuevo Módulo
+                <Plus size={20} color="#64748b" /> Nuevo Módulo
               </button>
               <div style={dividerStyle} />
               <div style={sectionTitleStyle}>Exportar</div>
@@ -505,41 +531,45 @@ function App() {
               <div style={dividerStyle} />
               <div style={sectionTitleStyle}>Sistema</div>
               <button style={menuItemStyle} onClick={() => { setGuiaOpen(true); setGlobalMenuOpen(false); }}>
-                <BookOpen size={20} color="var(--text-muted)" /> Guía de Uso
+                <BookOpen size={20} color="#64748b" /> Guía de Uso
               </button>
               <button style={menuItemStyle} onClick={exportarBackup}>
-                <Save size={20} color="var(--text-muted)" /> Backup JSON
+                <Save size={20} color="#64748b" /> Backup JSON
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Bottom nav móvil */}
+      {/* ============ BOTTOM NAV MÓVIL (único botón "Nuevo") ============ */}
       {isMobile && (
         <nav className="mobile-bottom-nav">
-          <button onClick={() => setModulosDrawerOpen(true)} style={{ color: modulosDrawerOpen ? 'var(--primary)' : 'var(--text-muted)' }}>
+          <button onClick={() => setModulosDrawerOpen(true)} style={{ color: modulosDrawerOpen ? 'var(--primary)' : '#64748b' }}>
             <FolderOpen size={22} />
             <span>Módulos</span>
           </button>
-          <button onClick={() => window.dispatchEvent(new Event('abrir-nuevo-registro'))} className="nav-new" disabled={!actual}>
+          <button
+            onClick={() => window.dispatchEvent(new Event('abrir-nuevo-registro'))}
+            className="nav-new"
+            disabled={!actual}
+          >
             <Plus size={26} />
             <span>Nuevo</span>
           </button>
-          <button onClick={() => setGlobalMenuOpen(true)}>
+          <button onClick={() => setGlobalMenuOpen(true)} style={{ color: '#64748b' }}>
             <Settings size={22} />
             <span>Menú</span>
           </button>
         </nav>
       )}
 
-      {/* Drawer módulos móvil */}
+      {/* ============ DRAWER DE MÓDULOS (Móvil) ============ */}
       {modulosDrawerOpen && (
         <div className="modal-overlay" onClick={() => setModulosDrawerOpen(false)} style={{ zIndex: 10000, alignItems: 'flex-start' }}>
-          <div className="drawer-panel" onClick={e => e.stopPropagation()} style={{ width: '85%', maxWidth: 340, height: '100%', borderRadius: '0 24px 24px 0', animation: 'slideIn 0.2s ease-out' }}>
-            <div className="drawer-header" style={{ padding: '20px', borderBottom: '1px solid var(--border)' }}>
-              <h3 style={{ margin: 0, fontSize: 18 }}>Mis Módulos</h3>
-              <button className="btn-icon-close" onClick={() => setModulosDrawerOpen(false)}><X size={20} /></button>
+          <div className="drawer-panel" onClick={e => e.stopPropagation()} style={{ width: '85%', maxWidth: 340, height: '100%', background: '#ffffff', borderRadius: '0 24px 24px 0', animation: 'slideIn 0.2s ease-out' }}>
+            <div className="drawer-header" style={{ padding: '20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ margin: 0, fontSize: 18, color: '#0f172a' }}>Mis Módulos</h3>
+              <button className="btn-icon-close" onClick={() => setModulosDrawerOpen(false)} style={{ background: '#f1f5f9', color: '#475569' }}><X size={20} /></button>
             </div>
             <div style={{ flex: 1, overflowY: 'auto', padding: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
               {modulos.map(m => (
@@ -547,7 +577,14 @@ function App() {
                   key={m.id}
                   className={`drawer-item ${m.id === actualId ? 'active' : ''}`}
                   onClick={() => { setActualId(m.id); setModulosDrawerOpen(false); }}
-                  style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 12, border: 'none', background: m.id === actualId ? '#f0fdfa' : 'transparent', color: m.id === actualId ? '#0f766e' : 'var(--text)', cursor: 'pointer', width: '100%', textAlign: 'left', fontWeight: m.id === actualId ? 600 : 500 }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px',
+                    borderRadius: 12, border: 'none',
+                    background: m.id === actualId ? '#f0fdfa' : 'transparent',
+                    color: m.id === actualId ? '#0f766e' : '#0f172a',
+                    cursor: 'pointer', width: '100%', textAlign: 'left',
+                    fontWeight: m.id === actualId ? 700 : 500,
+                  }}
                 >
                   <AppIcon emoji={m.icono} size={22} />
                   <span style={{ flex: 1 }}>{m.nombre}</span>
@@ -557,7 +594,12 @@ function App() {
               <div style={dividerStyle} />
               <button
                 onClick={() => { abrirNuevoModulo(); setModulosDrawerOpen(false); }}
-                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 12, border: 'none', background: 'transparent', color: 'var(--primary)', cursor: 'pointer', width: '100%', textAlign: 'left', fontWeight: 600 }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px',
+                  borderRadius: 12, border: 'none',
+                  background: '#f0fdfa', color: '#0f766e',
+                  cursor: 'pointer', width: '100%', textAlign: 'left', fontWeight: 700,
+                }}
               >
                 <Plus size={22} />
                 <span>Nuevo módulo</span>
