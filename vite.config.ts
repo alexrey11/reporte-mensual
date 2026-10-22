@@ -4,8 +4,9 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { viteSingleFile } from 'vite-plugin-singlefile';
 import { fileURLToPath, URL } from 'node:url';
 
-// https://vitejs.dev/config/
+
 export default defineConfig({
+  base: '/reporte-mensual/',
   plugins: [
     react(),
     VitePWA({
