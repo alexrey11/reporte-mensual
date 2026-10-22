@@ -1,49 +1,45 @@
-name: Deploy to GitHub Pages
+name: Build Native APK
 
 on:
-  push:
-    branches: [ "main" ]
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
+  workflow_dispatch: # Permite ejecutarlo manualmente
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout del código
         uses: actions/checkout@v4
-      
-      - name: Setup Node
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
-          
-      - name: Install dependencies
-        run: npm ci
-        
-      - name: Build
-        run: npm run build
-        
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-        
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+          node-version: '20'
+
+      - name: Instalar Java JDK 17
+        uses: actions/setup-java@v4
         with:
-          path: './dist'
-          
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Instalar Bubblewrap CLI
+        run: npm install -g @bubblewrap/cli
+
+      - name: Decodificar el Keystore
+        run: echo "${{ secrets.KEYSTORE_FILE }}" | base64 --decode > android.keystore
+
+      - name: Inicializar y Compilar APK
+        env:
+          BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          bubblewrap init --manifest https://alexrey11.github.io/reporte-mensual/manifest.json --directory ./android-project --skipPwaValidation
+          cp android.keystore ./android-project/android.keystore
+          cd ./android-project
+          node -e "const fs=require('fs');const m=JSON.parse(fs.readFileSync('twa-manifest.json'));m.keystorePath='./android.keystore';m.keyAlias='${{ secrets.KEY_ALIAS }}';fs.writeFileSync('twa-manifest.json',JSON.stringify(m,null,2))"
+          bubblewrap build
+
+      - name: Subir APK Nativa
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporte-mensual-native-apk
+          path: ./android-project/app-release-signed.apk
