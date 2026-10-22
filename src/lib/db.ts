@@ -153,19 +153,10 @@ export function seedIfEmpty(): Promise<void> {
 
     const estadoId = uuid();
     const campos: Omit<Campo, 'moduloId' | 'orden'>[] = [
-      // 1. Fecha y hora de recibo (auto)
       { id: uuid(), etiqueta: 'Fecha y hora de recibo', tipo: 'fecha_hora', requerido: true, mostrarEnTabla: true, opciones: [], autoFechaCreacion: true, autoFechaEstadoId: null, autoFechaEstadoValor: null },
-
-      // 2. Nombre y apellidos
       { id: uuid(), etiqueta: 'Nombre y Apellidos', tipo: 'texto', requerido: true, mostrarEnTabla: true, opciones: [], autoFechaCreacion: false, autoFechaEstadoId: null, autoFechaEstadoValor: null },
-
-      // 3. Departamento
       { id: uuid(), etiqueta: 'Departamento', tipo: 'texto', requerido: true, mostrarEnTabla: true, opciones: [], autoFechaCreacion: false, autoFechaEstadoId: null, autoFechaEstadoValor: null },
-
-      // 4. Reporte (¿Qué reportó?)
       { id: uuid(), etiqueta: 'Reporte', tipo: 'textarea', requerido: true, mostrarEnTabla: true, opciones: [], autoFechaCreacion: false, autoFechaEstadoId: null, autoFechaEstadoValor: null },
-
-      // 5. Estado
       {
         id: estadoId, etiqueta: 'Estado', tipo: 'select', requerido: true, mostrarEnTabla: true,
         opciones: ['Pendiente', 'En proceso', 'Terminado', 'Cancelado'],
@@ -178,18 +169,13 @@ export function seedIfEmpty(): Promise<void> {
           'Cancelado': '#64748b',
         },
       },
-
-      // 6. Fecha y hora de finalización (auto cuando pasa a Terminado)
       { id: uuid(), etiqueta: 'Fecha y hora de finalización', tipo: 'fecha_hora', requerido: false, mostrarEnTabla: true, opciones: [], autoFechaCreacion: false, autoFechaEstadoId: estadoId, autoFechaEstadoValor: 'Terminado' },
-
-      // 7. Observaciones
       { id: uuid(), etiqueta: 'Observaciones', tipo: 'textarea', requerido: false, mostrarEnTabla: false, opciones: [], autoFechaCreacion: false, autoFechaEstadoId: null, autoFechaEstadoValor: null },
     ];
     for (let i = 0; i < campos.length; i++) {
       await db.campos.add({ ...campos[i], moduloId: modId, orden: i });
     }
 
-    // Registro de ejemplo didáctico
     const byLabel = (lbl: string) => campos.find(x => x.etiqueta === lbl)!.id;
     await db.registros.add({
       id: uuid(),
@@ -236,12 +222,13 @@ export async function exportarBackup() {
     registros: await db.registros.toArray(),
     config: await db.config.toArray(),
   };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `Backup_ReporteMensual_${new Date().toISOString().slice(0, 10)}.json`;
-  a.click();
-  URL.revokeObjectURL(a.href);
+  const json = JSON.stringify(data, null, 2);
+  const { saveFile } = await import('@/lib/saveFile');
+  await saveFile(
+    `Backup_ReporteMensual_${new Date().toISOString().slice(0, 10)}.json`,
+    json,
+    'application/json'
+  );
 }
 
 export async function importarBackup(file: File) {
@@ -272,14 +259,13 @@ export async function exportarPlantilla(moduloId: string) {
     modulo: { ...mod, id: 'new' },
     campos: campos.map(c => ({ ...c, moduloId: 'new' })),
   };
-  const blob = new Blob([JSON.stringify(plantilla, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `Plantilla_${mod.nombre.replace(/[^\w]+/g, '_')}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(a.href);
+  const json = JSON.stringify(plantilla, null, 2);
+  const { saveFile } = await import('@/lib/saveFile');
+  await saveFile(
+    `Plantilla_${mod.nombre.replace(/[^\w]+/g, '_')}.json`,
+    json,
+    'application/json'
+  );
 }
 
 export async function importarPlantilla(file: File): Promise<string> {
@@ -309,12 +295,11 @@ export async function exportarModuloCompleto(moduloId: string) {
   const campos = await db.campos.where('moduloId').equals(moduloId).toArray();
   const registros = await db.registros.where('moduloId').equals(moduloId).toArray();
   const data = { type: 'modulo_completo', version: 1, exportedAt: ahoraISO(), modulo: mod, campos, registros };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `Modulo_${mod.nombre.replace(/[^\w]+/g, '_')}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(a.href);
+  const json = JSON.stringify(data, null, 2);
+  const { saveFile } = await import('@/lib/saveFile');
+  await saveFile(
+    `Modulo_${mod.nombre.replace(/[^\w]+/g, '_')}.json`,
+    json,
+    'application/json'
+  );
 }

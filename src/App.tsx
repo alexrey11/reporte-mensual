@@ -565,8 +565,33 @@ function App() {
 
       {/* ============ DRAWER DE MÓDULOS (Móvil) ============ */}
       {modulosDrawerOpen && (
-        <div className="modal-overlay" onClick={() => setModulosDrawerOpen(false)} style={{ zIndex: 10000, alignItems: 'flex-start' }}>
-          <div className="drawer-panel" onClick={e => e.stopPropagation()} style={{ width: '85%', maxWidth: 340, height: '100%', background: '#ffffff', borderRadius: '0 24px 24px 0', animation: 'slideIn 0.2s ease-out' }}>
+        <div
+          className="modal-overlay"
+          onClick={() => setModulosDrawerOpen(false)}
+          style={{
+            zIndex: 10000,
+            alignItems: 'stretch',        // 👈 ocupa todo el alto
+            justifyContent: 'flex-start', // 👈 pegado a la izquierda
+            padding: 0,
+          }}
+        >
+          <div
+            className="drawer-panel"
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '85%',
+              maxWidth: 340,
+              height: '100%',
+              background: '#ffffff',
+              borderRadius: '0 24px 24px 0',
+              animation: 'slideIn 0.2s ease-out',
+              marginRight: 'auto',        // 👈 fuerza al borde izquierdo
+              marginLeft: 0,              // 👈 por si acaso
+              boxShadow: '4px 0 24px rgba(15, 23, 42, 0.25)',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
             <div className="drawer-header" style={{ padding: '20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ margin: 0, fontSize: 18, color: '#0f172a' }}>Mis Módulos</h3>
               <button className="btn-icon-close" onClick={() => setModulosDrawerOpen(false)} style={{ background: '#f1f5f9', color: '#475569' }}><X size={20} /></button>
@@ -606,54 +631,61 @@ function App() {
               </button>
             </div>
           </div>
-        </div>
-      )}
+        </div >
+      )
+      }
 
-      {editorOpen && (
-        <EditorModulo
-          modulo={editorModulo}
-          campos={editorCampos}
-          onClose={() => setEditorOpen(false)}
-          onSave={async () => {
-            setEditorOpen(false);
-            await cargar();
-            if (actualId) {
-              const c = await db.campos.where('moduloId').equals(actualId).sortBy('orden');
-              setCamposActuales(c);
-            }
-          }}
-        />
-      )}
+      {
+        editorOpen && (
+          <EditorModulo
+            modulo={editorModulo}
+            campos={editorCampos}
+            onClose={() => setEditorOpen(false)}
+            onSave={async () => {
+              setEditorOpen(false);
+              await cargar();
+              if (actualId) {
+                const c = await db.campos.where('moduloId').equals(actualId).sortBy('orden');
+                setCamposActuales(c);
+              }
+            }}
+          />
+        )
+      }
 
-      {importExcelGlobalOpen && (
-        <ImportarExcel
-          modulo={actual || undefined}
-          campos={camposActuales}
-          onClose={() => setImportExcelGlobalOpen(false)}
-          onImported={async (nuevoModuloId) => {
-            setImportExcelGlobalOpen(false);
-            await cargar();
-            if (nuevoModuloId) setActualId(nuevoModuloId);
-          }}
-        />
-      )}
+      {
+        importExcelGlobalOpen && (
+          <ImportarExcel
+            modulo={actual || undefined}
+            campos={camposActuales}
+            onClose={() => setImportExcelGlobalOpen(false)}
+            onImported={async (nuevoModuloId) => {
+              setImportExcelGlobalOpen(false);
+              await cargar();
+              if (nuevoModuloId) setActualId(nuevoModuloId);
+            }}
+          />
+        )
+      }
 
       {guiaOpen && <Guia onClose={() => setGuiaOpen(false)} />}
 
-      {estadisticasOpen && actual && (
-        <Estadisticas
-          modulo={actual}
-          campos={camposActuales}
-          anio={anio}
-          mes={mes}
-          usuario={usuario}
-          onClose={() => setEstadisticasOpen(false)}
-        />
-      )}
+      {
+        estadisticasOpen && actual && (
+          <Estadisticas
+            modulo={actual}
+            campos={camposActuales}
+            anio={anio}
+            mes={mes}
+            usuario={usuario}
+            onClose={() => setEstadisticasOpen(false)}
+          />
+        )
+      }
 
       <PWAInstallPrompt />
       <div id="pdf-render-area" style={{ position: 'fixed', left: '-99999px', top: 0 }} />
-    </div>
+    </div >
   );
 }
 

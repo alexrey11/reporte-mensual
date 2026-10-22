@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { saveFile } from '@/lib/saveFile';
 import {
   db, formatearFecha, formatearFechaCorta, formatearHora,
   nombreMes, type Campo, type Modulo, type Registro,
@@ -439,7 +440,12 @@ export async function exportarExcel(anio: number, mes: number, moduloIdFiltro?: 
     XLSX.utils.book_append_sheet(wb, ws, final);
   }
 
-  XLSX.writeFile(wb, `ReporteMensual_${nombreMes(mes)}_${anio}.xlsx`, { cellDates: true });
+  // Generar el Excel como array binario
+  const arrayBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([arrayBuffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
+  await saveFile(`ReporteMensual_${nombreMes(mes)}_${anio}.xlsx`, blob, blob.type);
 }
 
 /* =========================================================
@@ -752,5 +758,6 @@ export async function exportarPDF(anio: number, mes: number, moduloIdFiltro?: st
     drawPageNumber(pdf, i, totalPages);
   }
 
-  pdf.save(`ReporteMensual_${nombreMes(mes)}_${anio}.pdf`);
+  const pdfBlob = pdf.output('blob');
+  await saveFile(`ReporteMensual_${nombreMes(mes)}_${anio}.pdf`, pdfBlob, 'application/pdf');
 }
