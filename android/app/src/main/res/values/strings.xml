@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">ReporteMensual</string>
+    <string name="title_activity_main">ReporteMensual</string>
+    <string name="package_name">cu.alexrey11.reportemensual</string>
+    <string name="custom_url_scheme">cu.alexrey11.reportemensual</string>
+</resources>

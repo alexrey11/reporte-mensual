@@ -1,91 +1,54 @@
-name: Build Native APK
+name: Build Android APK
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout del código
+      - name: Checkout código
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
-      - name: Instalar Java JDK 17
+      - name: Instalar dependencias
+        run: npm install --no-audit --no-fund
+
+      - name: Build web assets
+        run: npm run build
+
+      - name: Setup Java 17 (Temurin)
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Instalar Bubblewrap CLI
-        run: npm install -g @bubblewrap/cli
+      - name: Instalar Capacitor CLI global
+        run: npm install -g @capacitor/cli@latest
 
-      - name: Configurar rutas de Android
-        run: |
-          mkdir -p ~/.bubblewrap
-          SDK_PATH="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
-          echo "{\"jdkPath\": \"$JAVA_HOME\", \"androidSdkPath\": \"$SDK_PATH\"}" > ~/.bubblewrap/config.json
-
-      - name: Decodificar el Keystore
-        run: echo "${{ secrets.KEYSTORE_FILE }}" | base64 --decode > android.keystore
-
-      # 🔥 CREAMOS EL MANIFIESTO LOCAL CON TODAS LAS RESPUESTAS
-      - name: Crear twa-manifest.json
-        run: |
-          cat > twa-manifest.json << EOF
-          {
-            "packageId": "cu.alexrey11.reportemensual",
-            "host": "alexrey11.github.io",
-            "name": "ReporteMensual",
-            "launcherName": "Reportes",
-            "display": "standalone",
-            "themeColor": "#0f172a",
-            "navigationColor": "#0f172a",
-            "backgroundColor": "#ffffff",
-            "startUrl": "/reporte-mensual/",
-            "iconUrl": "https://alexrey11.github.io/reporte-mensual/pwa-512x512.png",
-            "maskableIconUrl": "https://alexrey11.github.io/reporte-mensual/pwa-512x512.png",
-            "webManifestUrl": "https://alexrey11.github.io/reporte-mensual/manifest.webmanifest",
-            "appVersionName": "1.0.0",
-            "appVersionCode": 1,
-            "signingKey": {
-              "path": "./android.keystore",
-              "alias": "${{ secrets.KEY_ALIAS }}"
-            },
-            "enableNotifications": false,
-            "generatorApp": "bubblewrap-cli",
-            "isChromeOSOnly": false,
-            "isMetaQuest": false,
-            "fullScopeUrl": "https://alexrey11.github.io/reporte-mensual/",
-            "minSdkVersion": 21,
-            "orientation": "portrait",
-            "fingerprints": [],
-            "additionalTrustedOrigins": [],
-            "retainedBundles": [],
-            "appVersion": "1.0.0"
-          }
-          EOF
-
-      - name: Generar Proyecto Android
-        run: |
-          # 🔥 Usamos el manifiesto LOCAL, no el remoto
-          bubblewrap init --manifest=./twa-manifest.json --directory ./android-project
+      - name: Sync Capacitor
+        run: cap sync android
 
       - name: Compilar APK
-        env:
-          BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        working-directory: android
         run: |
-          cp android.keystore ./android-project/android.keystore
-          cd ./android-project
-          bubblewrap build
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
-      - name: Subir APK Nativa
+      - name: Verificar APK generado
+        run: ls -lh android/app/build/outputs/apk/debug/
+
+      - name: Subir APK como artifact
         uses: actions/upload-artifact@v4
         with:
-          name: reporte-mensual-native-apk
-          path: ./android-project/app-release-signed.apk
+          name: reporte-mensual-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30

@@ -1,0 +1,9 @@
+{
+    "appId": "cu.alexrey11.reportemensual",
+    "appName": "ReporteMensual",
+    "webDir": "dist",
+    "bundledWebRuntime": false,
+    "android": {
+        "allowMixedContent": true
+    }
+}

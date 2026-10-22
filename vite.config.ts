@@ -5,8 +5,8 @@ import { fileURLToPath, URL } from 'node:url';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  // IMPORTANTE: Debe coincidir con el nombre de tu repositorio
-  base: '/reporte-mensual/',
+  // 🔥 CRÍTICO: Usamos rutas relativas para que funcione en GitHub Pages Y en Capacitor (Android)
+  base: './',
 
   plugins: [
     react(),
@@ -15,14 +15,15 @@ export default defineConfig({
       injectRegister: 'auto',
       manifest: {
         name: 'ReporteMensual',
-        short_name: 'ReporteMensual',
+        short_name: 'Reportes',
         description: 'Reportes Generales y Registro Venceremos (offline)',
         theme_color: '#0f172a',
         background_color: '#0f172a',
         display: 'standalone',
-        // 🔥 ESTOS SON LOS VALORES CORRECTOS
-        start_url: '/reporte-mensual/',
-        scope: '/reporte-mensual/',
+        orientation: 'portrait',
+        // Rutas relativas para la PWA
+        start_url: './',
+        scope: './',
         lang: 'es',
         icons: [
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
@@ -32,9 +33,10 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff,woff2}'],
+        // Aumentamos el límite de tamaño de archivo para evitar problemas con las librerías
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },
     }),
-    // 🔥 ELIMINADO: viteSingleFile() ya no es necesario para la web
   ],
   resolve: {
     alias: {
@@ -44,5 +46,8 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
-  // Eliminadas las configuraciones de build para single-file
+  build: {
+    // Evita warnings de chunk size
+    chunkSizeWarningLimit: 5000,
+  },
 });
